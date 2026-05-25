@@ -1,0 +1,94 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Inter', sans-serif;
+  --font-display: 'Syne', sans-serif;
+  
+  --color-bg: #030303;
+  --color-text: #F9FAFB;
+  --color-text-muted: #888888;
+  --color-accent: #ffffff;
+  --color-surface: rgba(255, 255, 255, 0.03);
+  --color-surface-hover: rgba(255, 255, 255, 0.08);
+  --color-border: rgba(255, 255, 255, 0.08);
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    cursor: none;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-bg) var(--color-bg);
+  }
+  body {
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    @apply antialiased overflow-x-hidden;
+  }
+  
+  /* Hide default cursor on interactive elements too */
+  a, button, input, textarea, select {
+    cursor: none;
+  }
+  
+  ::selection {
+    background-color: rgba(255, 255, 255, 0.9);
+    color: black;
+  }
+
+  /* Keep scrollbar in theme so it blends into the background */
+  *::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: var(--color-bg);
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background: var(--color-bg);
+    border-radius: 9999px;
+    border: 2px solid var(--color-bg);
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background: var(--color-bg);
+  }
+}
+
+@layer utilities {
+  .glass {
+    background: var(--color-surface);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--color-border);
+  }
+  
+  .glass-card {
+    background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  }
+
+  .text-gradient {
+    background: linear-gradient(to bottom right, #ffffff 30%, #9ca3af 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    color: transparent;
+  }
+  
+  .text-outline {
+    -webkit-text-stroke: 1px rgba(255, 255, 255, 0.2);
+    color: transparent;
+  }
+
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
