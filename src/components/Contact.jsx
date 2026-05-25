@@ -1,15 +1,12 @@
-//seen
-
 import React, { useState } from 'react';
 import { motion as Motion } from 'framer-motion';
-import { Mail, Loader2 } from 'lucide-react';
+import { Mail, Loader2, ArrowUpRight } from 'lucide-react';
 import { FaGithub, FaLinkedin, FaTwitter, FaInstagram } from 'react-icons/fa';
 import { personalInfo } from '../personalData';
 import emailjs from '@emailjs/browser';
 import toast, { Toaster } from 'react-hot-toast';
 import { Link } from 'react-router-dom';
 
-// Helper to check if link is internal route
 const isInternalLink = (url) => url && url.startsWith('/');
 
 const Contact = () => {
@@ -19,7 +16,8 @@ const Contact = () => {
     phone: '',
     message: ''
   });
-  const [status, setStatus] = useState('idle'); // idle, sending, success, error
+  const [focusedField, setFocusedField] = useState(null);
+  const [status, setStatus] = useState('idle');
 
   const handleChange = (e) => {
     setFormData(prev => ({
@@ -35,23 +33,30 @@ const Contact = () => {
     setStatus('sending');
 
     try {
+      // 🚀 CRITICAL INITIALIZATION: Safely bind your public key onto the browser runtime thread
+      emailjs.init(import.meta.env.VITE_EMAILJS_PUBLIC_KEY);
+
       await emailjs.send(
         import.meta.env.VITE_EMAILJS_SERVICE_ID,
         import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
         {
+          // 📦 REDUNDANT KEY MAPPING:
+          // Supplies BOTH custom keys and default EmailJS dashboard parameter targets 
+          // so your HTML layout compiles successfully without throwing a 400 Bad Request.
+          from_name: formData.name,
           name: formData.name,
+          
+          reply_to: formData.email,
           email: formData.email,
-          phone: formData.phone,
-          title: "New Portfolio Inquiry",
+          
+          phone: formData.phone || 'Not provided',
           time: new Date().toLocaleString(),
+          
           message: `Phone Number: ${formData.phone || 'Not provided'}\n\nMessage:\n${formData.message}`,
-          to_name: personalInfo.name,
-          my_name: personalInfo.name,
-          my_email: personalInfo.email,
-          my_phone: personalInfo.phone,
         },
         import.meta.env.VITE_EMAILJS_PUBLIC_KEY
       );
+
       setStatus('idle');
       setFormData({ name: '', email: '', phone: '', message: '' });
       toast.success("Message sent successfully! I'll get back to you soon.");
@@ -67,188 +72,246 @@ const Contact = () => {
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.1,
-        delayChildren: 0.3
+        staggerChildren: 0.08,
+        delayChildren: 0.2
       }
     }
   };
 
   const item = {
-    hidden: { opacity: 0, y: 20 },
+    hidden: { opacity: 0, scale: 0.9 },
     visible: {
       opacity: 1,
-      y: 0,
+      scale: 1,
       transition: {
-        duration: 0.6,
+        duration: 0.5,
         ease: [0.16, 1, 0.3, 1]
       }
     }
   };
 
+  const socialLinks = [
+    { icon: Mail, href: `mailto:${personalInfo.email}`, hoverClass: "hover:bg-white/10 hover:border-white/40 hover:text-white" },
+    { icon: FaGithub, href: personalInfo.github, hoverClass: "hover:bg-zinc-800/40 hover:border-zinc-500/40 hover:text-zinc-200" },
+    { icon: FaLinkedin, href: personalInfo.linkedin, hoverClass: "hover:bg-blue-600/10 hover:border-blue-500/40 hover:text-blue-400" },
+    { icon: FaTwitter, href: personalInfo.twitter, hoverClass: "hover:bg-sky-500/10 hover:border-sky-400/40 hover:text-sky-400" },
+    { icon: FaInstagram, href: personalInfo.instagram, hoverClass: "hover:bg-pink-500/10 hover:border-pink-400/40 hover:text-pink-400" }
+  ];
+
   return (
-    <section id="contact" className="py-36 relative">
-      <div className="max-w-[90rem] mx-auto px-6 sm:px-12 lg:px-16">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-20">
+    <section id="contact" className="py-28 relative bg-black overflow-hidden">
+      
+      {/* Decorative Ambient Background Radial Glows */}
+      <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-gradient-to-tr from-orange-500/10 via-pink-500/5 to-transparent blur-[120px] pointer-events-none" />
+      <div className="absolute top-[10%] left-[-10%] w-[400px] h-[400px] bg-gradient-to-br from-purple-500/5 to-transparent blur-[100px] pointer-events-none" />
+
+      <div className="max-w-[90rem] mx-auto px-6 sm:px-12 lg:px-16 relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 xl:gap-24 items-start">
+          
+          {/* LEFT CONTENT BLOCK */}
+          <div className="lg:col-span-5 flex flex-col justify-between h-full">
+            <Motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+            >
+              <span className="text-xs font-mono text-gray-500 tracking-[0.2em] uppercase block mb-4">
+                // CONNECT_POINT
+              </span>
+              <h2 className="text-5xl md:text-7xl font-display font-bold text-white mb-8 tracking-tight leading-[1.05]">
+                Let's work <br />
+                <span className="bg-gradient-to-r from-orange-400 via-pink-500 to-purple-500 text-transparent bg-clip-text">
+                  together.
+                </span>
+              </h2>
+              <p className="text-lg text-gray-400 font-light max-w-sm mb-12 leading-relaxed">
+                Currently available for selected freelance projects and architectural design opportunities.
+              </p>
+
+              {/* SOCIAL BUTTON LINKS */}
+              <div className="flex flex-col gap-6">
+                <p className="text-xs font-mono text-gray-600 uppercase tracking-widest">// SOCIAL_INDEX</p>
+                <Motion.div
+                  variants={container}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true }}
+                  className="flex flex-wrap gap-4"
+                >
+                  {socialLinks.map((social, index) => {
+                    const baseClass = `w-12 h-12 rounded-2xl border border-white/10 bg-white/[0.02] backdrop-blur-md flex items-center justify-center text-gray-400 transition-all duration-500 ease-out hover:-translate-y-1 ${social.hoverClass}`;
+
+                    return isInternalLink(social.href) ? (
+                      <Motion.div key={index} variants={item}>
+                        <Link to={social.href} className={baseClass}>
+                          <social.icon size={18} />
+                        </Link>
+                      </Motion.div>
+                    ) : (
+                      <Motion.a
+                        key={index}
+                        href={social.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        variants={item}
+                        className={baseClass}
+                      >
+                        <social.icon size={18} />
+                      </Motion.a>
+                    );
+                  })}
+                </Motion.div>
+              </div>
+            </Motion.div>
+          </div>
+
+          {/* RIGHT CONTAINER FORM BLOCK */}
           <Motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
+            transition={{ delay: 0.2, duration: 0.8 }}
+            className="lg:col-span-7 p-8 md:p-10 rounded-[2.5rem] border border-white/5 bg-gradient-to-b from-white/[0.04] to-transparent backdrop-blur-2xl relative"
           >
-            <h2 className="text-5xl md:text-7xl font-display font-bold text-white mb-8 leading-tight">
-              Let's work <br />
-              <span className="text-gray-500">together.</span>
-            </h2>
-            <p className="text-xl text-gray-400 font-light max-w-md mb-12">
-              Currently available for freelance projects and open to full-time opportunities.
-            </p>
+            {/* Top Linear Highlight wire */}
+            <div className="absolute top-0 left-1/4 right-1/4 h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
 
-            <Motion.div
-              variants={container}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-              className="flex gap-6"
-            >
-              {[
-                { icon: Mail, href: `mailto:${personalInfo.email}` },
-                { icon: FaGithub, href: personalInfo.github },
-                { icon: FaLinkedin, href: personalInfo.linkedin },
-                { icon: FaTwitter, href: personalInfo.twitter },
-                { icon: FaInstagram, href: personalInfo.instagram }
-              ].map((social, index) => {
-                const className = "w-14 h-14 rounded-full border-2 border-white/30 flex items-center justify-center text-white hover:bg-white hover:text-black transition-all duration-300";
+            <form className="space-y-7" onSubmit={handleSubmit}>
+              
+              {/* FULL NAME INPUT CONTAINER */}
+              <div className="space-y-2 group">
+                <label className={`text-xs font-mono uppercase tracking-widest transition-colors duration-300 ${focusedField === 'name' ? 'text-orange-400' : 'text-gray-500'}`}>
+                  Full Name <span className="text-orange-500/40">*</span>
+                </label>
+                <div className={`relative rounded-2xl border transition-all duration-500 bg-white/[0.01] ${focusedField === 'name' ? 'border-orange-500/40 bg-orange-500/[0.02]' : 'border-white/5 group-hover:border-white/10'}`}>
+                  <input
+                    type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    onFocus={() => setFocusedField('name')}
+                    onBlur={() => setFocusedField(null)}
+                    required
+                    className="w-full bg-transparent px-5 py-4 text-white outline-none transition-colors text-base font-light placeholder-gray-600"
+                    placeholder="John Doe"
+                  />
+                </div>
+              </div>
 
-                return isInternalLink(social.href) ? (
-                  <Motion.div key={index} variants={item}>
-                    <Link to={social.href} className={className}>
-                      <social.icon size={20} />
-                    </Link>
-                  </Motion.div>
-                ) : (
-                  <Motion.a
-                    key={index}
-                    href={social.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    variants={item}
-                    className={className}
-                  >
-                    <social.icon size={20} />
-                  </Motion.a>
-                );
-              })}
-            </Motion.div>
+              {/* EMAIL CONTAINER */}
+              <div className="space-y-2 group">
+                <label className={`text-xs font-mono uppercase tracking-widest transition-colors duration-300 ${focusedField === 'email' ? 'text-pink-400' : 'text-gray-500'}`}>
+                  Email Address <span className="text-pink-500/40">*</span>
+                </label>
+                <div className={`relative rounded-2xl border transition-all duration-500 bg-white/[0.01] ${focusedField === 'email' ? 'border-pink-500/40 bg-pink-500/[0.02]' : 'border-white/5 group-hover:border-white/10'}`}>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    onFocus={() => setFocusedField('email')}
+                    onBlur={() => setFocusedField(null)}
+                    required
+                    className="w-full bg-transparent px-5 py-4 text-white outline-none transition-colors text-base font-light placeholder-gray-600"
+                    placeholder="hello@domain.com"
+                  />
+                </div>
+              </div>
+
+              {/* PHONE INPUT BOX */}
+              <div className="space-y-2 group">
+                <label className={`text-xs font-mono uppercase tracking-widest transition-colors duration-300 ${focusedField === 'phone' ? 'text-purple-400' : 'text-gray-500'}`}>
+                  Phone Number <span className="text-gray-600 text-[10px] lowercase font-sans font-light">(optional)</span>
+                </label>
+                <div className={`relative rounded-2xl border transition-all duration-500 bg-white/[0.01] ${focusedField === 'phone' ? 'border-purple-500/40 bg-purple-500/[0.02]' : 'border-white/5 group-hover:border-white/10'}`}>
+                  <input
+                    type="tel"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    onFocus={() => setFocusedField('phone')}
+                    onBlur={() => setFocusedField(null)}
+                    className="w-full bg-transparent px-5 py-4 text-white outline-none transition-colors text-base font-light placeholder-gray-600"
+                    placeholder="+91 XXXXX XXXXX"
+                  />
+                </div>
+              </div>
+
+              {/* TEXTAREA CONTAINER */}
+              <div className="space-y-2 group">
+                <label className={`text-xs font-mono uppercase tracking-widest transition-colors duration-300 ${focusedField === 'message' ? 'text-orange-400' : 'text-gray-500'}`}>
+                  Project Brief <span className="text-orange-500/40">*</span>
+                </label>
+                <div className={`relative rounded-2xl border transition-all duration-500 bg-white/[0.01] ${focusedField === 'message' ? 'border-orange-500/40 bg-orange-500/[0.02]' : 'border-white/5 group-hover:border-white/10'}`}>
+                  <textarea
+                    rows="4"
+                    name="message"
+                    value={formData.message}
+                    onChange={handleChange}
+                    onFocus={() => setFocusedField('message')}
+                    onBlur={() => setFocusedField(null)}
+                    required
+                    className="w-full bg-transparent px-5 py-4 text-white outline-none transition-colors text-base font-light placeholder-gray-600 resize-none leading-relaxed"
+                    placeholder="Tell me about your build vision..."
+                  ></textarea>
+                </div>
+              </div>
+
+              {/* HIGH-END INTERACTIVE SUBMIT BUTTON */}
+              <Motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                disabled={status === 'sending'}
+                className="w-full relative group/btn overflow-hidden rounded-2xl bg-gradient-to-r from-orange-400 via-pink-500 to-purple-500 p-[1px] transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed mt-4"
+              >
+                <div className="w-full h-full bg-zinc-950 rounded-[15px] px-6 py-4 transition-colors duration-300 group-hover/btn:bg-transparent flex items-center justify-center gap-2">
+                  {status === 'sending' ? (
+                    <>
+                      <Loader2 className="animate-spin text-white" size={18} />
+                      <span className="text-white text-sm tracking-wider uppercase font-mono text-xs">Transmitting Brief...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-white group-hover/btn:text-white transition-colors text-xs font-mono tracking-widest uppercase">Dispatch Message</span>
+                      <ArrowUpRight className="text-gray-400 group-hover/btn:text-white group-hover/btn:rotate-45 transition-all duration-300" size={16} />
+                    </>
+                  )}
+                </div>
+              </Motion.button>
+
+            </form>
           </Motion.div>
 
-          <Motion.form
-            initial={{ opacity: 0, x: 20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.2 }}
-            className="space-y-8"
-            onSubmit={handleSubmit}
-          >
-            <div className="space-y-2">
-              <label className="text-sm uppercase tracking-wider text-gray-500">Full Name</label>
-              <input
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                required
-                className="w-full bg-transparent border-b border-white/10 py-4 text-white focus:border-white outline-none transition-colors text-lg"
-                placeholder="Enter your full name"
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm uppercase tracking-wider text-gray-500">Email Address</label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                required
-                className="w-full bg-transparent border-b border-white/10 py-4 text-white focus:border-white outline-none transition-colors text-lg"
-                placeholder="Enter your email address"
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm uppercase tracking-wider text-gray-500">Phone Number </label><span className="text-gray-500 text-xs">(optional)</span>
-              <input
-                type="tel"
-                name="phone"
-                value={formData.phone}
-                onChange={handleChange}
-                className="w-full bg-transparent border-b border-white/10 py-4 text-white focus:border-white outline-none transition-colors text-lg"
-                placeholder="Enter your phone number (optional)"
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm uppercase tracking-wider text-gray-500">How can I help you?</label>
-              <textarea
-                rows="3"
-                name="message"
-                value={formData.message}
-                onChange={handleChange}
-                required
-                className="w-full bg-transparent border-b border-white/10 py-4 text-white focus:border-white outline-none transition-colors text-lg resize-none"
-                placeholder="Write your message here..."
-              ></textarea>
-            </div>
-
-            <button
-              disabled={status === 'sending'}
-              className="bg-white text-black px-8 py-4 rounded-full font-medium hover:bg-gray-200 transition-all mt-8 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-            >
-              {status === 'sending' ? (
-                <>
-                  <Loader2 className="animate-spin" size={20} />
-                  Sending...
-                </>
-              ) : (
-                'Send Message'
-              )}
-            </button>
-
-          </Motion.form>
-
+          {/* NOTIFICATION FRAMEWORK CORES */}
           <Toaster
             position="bottom-right"
             toastOptions={{
               duration: 5000,
               style: {
-                background: 'linear-gradient(135deg, rgba(30, 30, 30, 0.95) 0%, rgba(20, 20, 20, 0.98) 100%)',
+                background: 'linear-gradient(135deg, rgba(20, 20, 20, 0.95) 0%, rgba(10, 10, 10, 0.98) 100%)',
                 color: '#fff',
-                border: '1px solid rgba(255, 255, 255, 0.15)',
-                borderRadius: '16px',
-                padding: '16px 20px',
-                boxShadow: '0 20px 50px rgba(0, 0, 0, 0.5), 0 0 40px rgba(255, 255, 255, 0.03)',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                borderRadius: '20px',
+                padding: '16px 24px',
+                boxShadow: '0 30px 60px rgba(0, 0, 0, 0.8)',
                 backdropFilter: 'blur(20px)',
                 fontSize: '14px',
-                fontWeight: '500',
-                letterSpacing: '0.3px',
+                fontFamily: 'monospace'
               },
               success: {
                 style: {
-                  background: 'linear-gradient(135deg, rgba(20, 40, 30, 0.95) 0%, rgba(15, 30, 20, 0.98) 100%)',
+                  background: 'linear-gradient(135deg, rgba(10, 35, 20, 0.95) 0%, rgba(5, 20, 10, 0.98) 100%)',
                   borderLeft: '4px solid #4ade80',
-                  boxShadow: '0 20px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(74, 222, 128, 0.1)',
                 },
-                iconTheme: {
-                  primary: '#4ade80',
-                  secondary: '#0a1f0f',
-                },
+                iconTheme: { primary: '#4ade80', secondary: '#05140a' },
               },
               error: {
                 style: {
-                  background: 'linear-gradient(135deg, rgba(40, 20, 20, 0.95) 0%, rgba(30, 15, 15, 0.98) 100%)',
+                  background: 'linear-gradient(135deg, rgba(35, 10, 10, 0.95) 0%, rgba(20, 5, 5, 0.98) 100%)',
                   borderLeft: '4px solid #f87171',
-                  boxShadow: '0 20px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(248, 113, 113, 0.1)',
                 },
-                iconTheme: {
-                  primary: '#f87171',
-                  secondary: '#1f0a0a',
-                },
+                iconTheme: { primary: '#f87171', secondary: '#140505' },
               },
             }}
           />

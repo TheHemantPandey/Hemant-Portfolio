@@ -62,6 +62,10 @@ const formatReplyText = (text) => {
 };
 
 const buildFallbackReply = (contextText) => {
+  if (!contextText || typeof contextText !== 'string') {
+    return `I do not have that information yet. You can contact Hemant via email for more details. (${identity.email})`;
+  }
+
   const lines = contextText
     .split('\n')
     .map((line) => line.trim())
@@ -102,31 +106,38 @@ const callOpenAiCompatibleModels = async ({
   let lastError = null;
 
   for (const model of modelCandidates.filter(Boolean)) {
-    const response = await fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
-        ...headers
-      },
-      body: JSON.stringify({ ...payloadBase, model })
-    });
+    try {
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${apiKey}`,
+          ...headers
+        },
+        body: JSON.stringify({ ...payloadBase, model })
+      });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      lastError = new Error(`${providerName} request failed for ${model}: ${response.status} ${errorText}`);
+      if (!response.ok) {
+        const errorText = await response.text();
+        lastError = new Error(`${providerName} request failed for ${model}: ${response.status} ${errorText}`);
 
-      if (response.status === 400 || response.status === 404 || response.status === 429) {
-        continue;
+        if (response.status === 400 || response.status === 404 || response.status === 429) {
+          continue;
+        }
+
+        throw lastError;
       }
 
-      throw lastError;
+      const data = await response.json();
+      const reply = data?.choices?.[0]?.message?.content?.trim();
+
+      if (reply) {
+        return formatReplyText(reply);
+      }
+    } catch (err) {
+      lastError = err;
+      continue;
     }
-
-    const data = await response.json();
-    const reply = data?.choices?.[0]?.message?.content?.trim();
-
-    return formatReplyText(reply || `I do not have that information yet. You can contact Hemant via email for more details. (${identity.email})`);
   }
 
   if (lastError) {
@@ -137,6 +148,8 @@ const callOpenAiCompatibleModels = async ({
 };
 
 const callOpenRouter = async ({ message, history, contextText, env }) => {
+  if (!env.OPENROUTER_API_KEY) return null;
+
   const modelCandidates = [
     env.OPENROUTER_MODEL,
     'meta-llama/llama-3.1-8b-instruct:free',
@@ -164,6 +177,8 @@ const callOpenRouter = async ({ message, history, contextText, env }) => {
 };
 
 const callGroq = async ({ message, history, contextText, env }) => {
+  if (!env.GROQ_API_KEY) return null;
+
   const modelCandidates = [
     env.GROQ_MODEL,
     'llama-3.1-8b-instant',
@@ -214,10 +229,9 @@ const callGemini = async ({ message, history, contextText, env }) => {
 
   const modelCandidates = [
     env.GEMINI_MODEL,
-    'gemini-3-flash-preview',
+    'gemini-2.5-flash',
     'gemini-2.0-flash',
-    'gemini-2.0-flash-001',
-    'gemini-flash-latest'
+    'gemini-1.5-flash'
   ].filter(Boolean);
 
   const payload = {
@@ -244,36 +258,38 @@ const callGemini = async ({ message, history, contextText, env }) => {
   let lastError = null;
 
   for (const model of modelCandidates) {
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(payload)
+    try {
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        }
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        lastError = new Error(`Gemini request failed for ${model}: ${response.status} ${errorText}`);
+        continue;
       }
-    );
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      lastError = new Error(`Gemini request failed for ${model}: ${response.status} ${errorText}`);
+      const data = await response.json();
+      const parts = data?.candidates?.[0]?.content?.parts || [];
+      const reply = parts
+        .map((part) => (typeof part?.text === 'string' ? part.text : ''))
+        .join('')
+        .trim();
 
-      if (response.status !== 404) {
-        throw lastError;
+      if (reply) {
+        return formatReplyText(reply);
       }
-
+    } catch (err) {
+      lastError = err;
       continue;
     }
-
-    const data = await response.json();
-    const parts = data?.candidates?.[0]?.content?.parts || [];
-    const reply = parts
-      .map((part) => (typeof part?.text === 'string' ? part.text : ''))
-      .join('')
-      .trim();
-
-    return formatReplyText(reply || `I do not have that information yet. You can contact Hemant via email for more details. (${identity.email})`);
   }
 
   throw lastError || new Error('Gemini request failed for all configured models.');
@@ -310,55 +326,65 @@ const callOpenAI = async ({ message, history, contextText, env }) => {
   const data = await response.json();
   const reply = data?.choices?.[0]?.message?.content?.trim();
 
-  return formatReplyText(reply || `I do not have that information yet. You can contact Hemant via email for more details. (${identity.email})`);
+  return formatReplyText(reply);
 };
 
 const getModelReply = async ({ message, history, contextText }) => {
-  const env = globalThis.process?.env || {};
+  // 🚀 CRITICAL FIX: Explicitly target standard node environment keys safely
+  const env = {
+    OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY || '',
+    OPENROUTER_MODEL: process.env.OPENROUTER_MODEL || '',
+    OPENROUTER_SITE_URL: process.env.OPENROUTER_SITE_URL || '',
+    OPENROUTER_SITE_NAME: process.env.OPENROUTER_SITE_NAME || '',
+    GROQ_API_KEY: process.env.GROQ_API_KEY || '',
+    GROQ_MODEL: process.env.GROQ_MODEL || '',
+    GEMINI_API_KEY: process.env.GEMINI_API_KEY || '',
+    GEMINI_MODEL: process.env.GEMINI_MODEL || '',
+    OPENAI_API_KEY: process.env.OPENAI_API_KEY || '',
+    OPENAI_MODEL: process.env.OPENAI_MODEL || ''
+  };
+
   const providerErrors = [];
 
+  // 1. Try OpenRouter
   try {
     const openRouterReply = await callOpenRouter({ message, history, contextText, env });
-    if (openRouterReply) {
-      return { reply: openRouterReply, provider: 'openrouter' };
-    }
+    if (openRouterReply) return { reply: openRouterReply, provider: 'openrouter' };
   } catch (error) {
     providerErrors.push(error);
   }
 
+  // 2. Try Groq
   try {
     const groqReply = await callGroq({ message, history, contextText, env });
-    if (groqReply) {
-      return { reply: groqReply, provider: 'groq' };
-    }
+    if (groqReply) return { reply: groqReply, provider: 'groq' };
   } catch (error) {
     providerErrors.push(error);
   }
 
+  // 3. Try Gemini
   try {
     const geminiReply = await callGemini({ message, history, contextText, env });
-    if (geminiReply) {
-      return { reply: geminiReply, provider: 'gemini' };
-    }
+    if (geminiReply) return { reply: geminiReply, provider: 'gemini' };
   } catch (error) {
     providerErrors.push(error);
   }
 
+  // 4. Try OpenAI
   try {
     const openAiReply = await callOpenAI({ message, history, contextText, env });
-    if (openAiReply) {
-      return { reply: openAiReply, provider: 'openai' };
-    }
+    if (openAiReply) return { reply: openAiReply, provider: 'openai' };
   } catch (error) {
     providerErrors.push(error);
   }
 
+  // Fallback setup if all active provider keys are offline/missing
   if (providerErrors.length > 0) {
     const [firstError] = providerErrors;
     return {
       reply: buildFallbackReply(contextText),
       provider: 'retrieval',
-      diagnostics: firstError?.message || 'Provider unavailable'
+      diagnostics: firstError?.message || 'Providers completely unavailable'
     };
   }
 
@@ -390,9 +416,7 @@ const parseRequestBody = async (req) => {
     raw += decoder.decode();
 
     raw = raw.trim();
-    if (!raw) {
-      return {};
-    }
+    if (!raw) return {};
 
     try {
       return JSON.parse(raw);
@@ -435,7 +459,14 @@ export default async function handler(req, res) {
       return sendJson(res, 400, { error: 'Message is required' });
     }
 
-    const contextText = buildContextText(message, 5);
+    // Safely wrap context builders
+    let contextText = '';
+    try {
+      contextText = buildContextText(message, 5) || '';
+    } catch (e) {
+      console.error("Context parsing failed:", e);
+    }
+
     let reply;
     let provider = 'retrieval';
     let usedFallback = false;
@@ -446,7 +477,7 @@ export default async function handler(req, res) {
       reply = formatReplyText(result.reply);
       provider = result.provider;
       usedFallback = provider === 'retrieval';
-    } catch {
+    } catch (err) {
       reply = buildFallbackReply(contextText);
       provider = 'retrieval';
       usedFallback = true;
@@ -462,7 +493,7 @@ export default async function handler(req, res) {
   } catch (error) {
     return sendJson(res, 500, {
       error: 'Failed to generate response',
-      details: error?.message || 'Unknown error'
+      details: error?.message || 'Unknown backend thread crash'
     });
   }
 }

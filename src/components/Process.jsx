@@ -1,6 +1,3 @@
-//seen
-
-
 import React from 'react';
 import { motion as Motion } from 'framer-motion';
 
@@ -8,22 +5,26 @@ const steps = [
   {
     id: "01",
     title: "Discovery",
-    description: "Understanding goals and requirements.",
+    description: "Deep diving into project goals, architecture scope, and target user requirements.",
+    color: "from-cyan-500 to-blue-600 text-cyan-400 border-cyan-500/20 group-hover:border-cyan-500/40 shadow-cyan-500/5",
   },
   {
     id: "02",
     title: "Design",
-    description: "Creating intuitive visual systems.",
+    description: "Crafting intuitive high-fidelity component screens, design systems, and visual flows.",
+    color: "from-purple-500 to-pink-500 text-purple-400 border-purple-500/20 group-hover:border-purple-500/40 shadow-purple-500/5",
   },
   {
     id: "03",
     title: "Build",
-    description: "Writing clean, efficient code.",
+    description: "Engineering robust, clean, and highly optimized code architectures using modern full-stack workflows.",
+    color: "from-orange-500 to-red-500 text-orange-400 border-orange-500/20 group-hover:border-orange-500/40 shadow-orange-500/5",
   },
   {
     id: "04",
     title: "Launch",
-    description: "Deploying to the world.",
+    description: "Executing complete speed audits, server edge indexing, and deploying globally.",
+    color: "from-emerald-500 to-teal-500 text-emerald-400 border-emerald-500/20 group-hover:border-emerald-500/40 shadow-emerald-500/5",
   }
 ];
 
@@ -33,65 +34,111 @@ const Process = () => {
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.1,
-        delayChildren: 0.3
+        staggerChildren: 0.15,
+        delayChildren: 0.2
       }
     }
   };
 
   const item = {
-    hidden: { opacity: 0, y: 20 },
+    hidden: { opacity: 0, y: 35 },
     visible: {
       opacity: 1,
       y: 0,
       transition: {
-        duration: 0.6,
+        duration: 0.8,
         ease: [0.16, 1, 0.3, 1]
       }
     }
   };
 
   return (
-    <section id="process" className="pt-36 relative">
-      <div className="max-w-[90rem] mx-auto px-6 sm:px-12 lg:px-16">
+    <section id="process" className="py-28 relative bg-black overflow-hidden">
+      
+      {/* Structural Background Accents */}
+      <div className="absolute top-1/2 left-0 right-0 h-40 bg-gradient-to-r from-orange-500/5 via-purple-500/5 to-cyan-500/5 blur-[120px] pointer-events-none" />
+
+      <div className="max-w-[90rem] mx-auto px-6 sm:px-12 lg:px-16 relative z-10">
+        
+        {/* SECTION HEADER */}
         <Motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="mb-20"
+          transition={{ duration: 0.6 }}
+          className="mb-24 flex items-end justify-between border-b border-white/10 pb-8"
         >
-          <h2 className="text-4xl md:text-6xl font-display font-bold text-white mb-6">
-            Process Of Development
-          </h2>
-          <div className="h-[1px] w-full bg-white/10"></div>
-        </Motion.div>
-
-        <Motion.div
-          variants={container}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12"
-        >
-          {steps.map((step) => (
-            <Motion.div
-              key={step.id}
-              variants={item}
-              className="relative group"
-            >
-              <span className="text-6xl font-display font-bold text-white/20 group-hover:text-white/30 transition-colors duration-300 absolute -top-8 -left-4 z-0">
-                {step.id}
+          <div>
+            <h2 className="text-4xl md:text-6xl font-display font-bold text-white mb-4 tracking-tight">
+              Process Of{" "}
+              <span className="bg-gradient-to-r from-orange-400 via-pink-500 to-purple-500 text-transparent bg-clip-text">
+                Development
               </span>
-
-              <div className="mt-8 relative z-10">
-                <h3 className="text-2xl font-bold text-white mb-3">{step.title}</h3>
-                <p className="text-gray-400 text-lg leading-relaxed font-light">
-                  {step.description}
-                </p>
-              </div>
-            </Motion.div>
-          ))}
+            </h2>
+            <p className="text-gray-400 text-lg font-light max-w-md">
+              The systematic workflow I use to reliably transform ambitious code ideas into production blueprints.
+            </p>
+          </div>
+          <span className="text-gray-500 font-mono text-sm hidden md:block">
+            // (05_WORKFLOW)
+          </span>
         </Motion.div>
+
+        {/* ROADMAP WRAPPER MATRIX */}
+        <div className="relative">
+          
+          {/* Continuous Structural Vector Timeline Connector Link Line (Hidden on mobile) */}
+          <div className="hidden lg:block absolute top-[44px] left-[5%] right-[5%] h-[1px] bg-gradient-to-r from-cyan-500/20 via-orange-500/20 to-emerald-500/20 z-0" />
+
+          <Motion.div
+            variants={container}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 relative z-10"
+          >
+            {steps.map((step, idx) => (
+              <Motion.div
+                key={step.id}
+                variants={item}
+                className="relative group flex flex-col"
+              >
+                {/* Horizontal / Vertical Connection Node Indicator Bullet */}
+                <div className="hidden lg:flex items-center justify-center absolute top-10 left-12 w-2 h-2 rounded-full bg-zinc-900 border border-white/20 z-20 group-hover:scale-125 transition-transform duration-300">
+                  <div className={`w-1 h-1 rounded-full bg-gradient-to-r ${step.color} opacity-0 group-hover:opacity-100 transition-opacity`} />
+                </div>
+
+                {/* Main Step Container Panel */}
+                <div className={`mt-4 p-8 rounded-[2rem] border bg-gradient-to-b from-white/[0.04] to-transparent backdrop-blur-2xl flex-1 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1.5 hover:shadow-2xl ${step.color}`}>
+                  
+                  {/* Glowing Top Flare Wire */}
+                  <div className="absolute top-0 left-1/4 right-1/4 h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+                  {/* Header Identifier Flag */}
+                  <div className="flex justify-between items-center mb-6">
+                    <span className={`text-4xl font-display font-black bg-gradient-to-br ${step.color} text-transparent bg-clip-text tracking-tight select-none`}>
+                      {step.id}
+                    </span>
+                    <span className="text-white/5 font-mono text-xs group-hover:text-white/10 transition-colors">
+                      🚀 PHASE_0{idx + 1}
+                    </span>
+                  </div>
+
+                  {/* Step Meta Contents */}
+                  <h3 className="text-2xl font-bold text-white mb-3 tracking-tight group-hover:text-gray-100 transition-colors">
+                    {step.title}
+                  </h3>
+                  
+                  <p className="text-gray-400 text-[0.92rem] leading-relaxed font-light group-hover:text-gray-300 transition-colors duration-300">
+                    {step.description}
+                  </p>
+                </div>
+                
+              </Motion.div>
+            ))}
+          </Motion.div>
+        </div>
+
       </div>
     </section>
   );

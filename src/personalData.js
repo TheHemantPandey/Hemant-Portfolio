@@ -9,7 +9,7 @@ export const personalInfo = {
   role: "Full Stack Web and App Developer",
   email: "hement.pandey2121@gmail.com",
   phone: "+91-6397565128",
-  linkedin: "https://linkedin.com/in/hemant-pandey-sde",
+  linkedin: "https://www.linkedin.com/in/hemant-pandey-ase/",
   github: "https://github.com/TheHemantPandey",
   twitter: "https://hemantpandey.in",
   instagram: "https://www.instagram.com/hemantt_pandey",
@@ -17,7 +17,7 @@ export const personalInfo = {
   socials: [
     {
       name: "LinkedIn",
-      url: "https://linkedin.com/in/hemant-pandey-sde",
+      url: "https://www.linkedin.com/in/hemant-pandey-ase/",
       icon: FaLinkedin,
     },
     {
@@ -64,6 +64,27 @@ export const skillCategories = [
 
 export const certificates = [
   {
+    name: "Cybersecurity Professional Training",
+    issuer: "NIIT Foundation & Cisco Networking Academy",
+    date: "Apr’26",
+    image: "/unavailable",
+    link: "/unavailable",
+  },
+  {
+    name: "Full-Stack MERN Development Specialization",
+    issuer: "Young India Show NGO Foundation",
+    date: "Apr’26",
+    image: "/unavailable",
+    link: "/unavailable",
+  },
+  {
+    name: "12-Week Credit Course Certification",
+    issuer: "Swayam NPTEL (University Credit Requirement)",
+    date: "May’26",
+    image: "/unavailable",
+    link: "/unavailable",
+  },
+  {
     name: "Introduction to Internet of Things (IoT)",
     issuer: "NPTEL IIT Kharagpur",
     date: "Apr’25",
@@ -71,37 +92,16 @@ export const certificates = [
     link: "/unavailable",
   },
   {
-    name: "Object-Oriented Programming",
+    name: "Object-Oriented Programming (OOPs)",
     issuer: "Neocolab",
     date: "Jan’25",
     image: "/unavailable",
     link: "/unavailable",
   },
   {
-    name: "Data Structures and Algorithms",
+    name: "Data Structures and Algorithms (DSA)",
     issuer: "Neocolab",
     date: "Jan’25",
-    image: "/unavailable",
-    link: "/unavailable",
-  },
-  {
-    name: "Web Development",
-    issuer: "Rising Tech Pro",
-    date: "Mar’24",
-    image: "/unavailable",
-    link: "/unavailable",
-  },
-  {
-    name: "Python-3 Bootcamp",
-    issuer: "Udemy",
-    date: "Feb’24",
-    image: "/unavailable",
-    link: "/unavailable",
-  },
-  {
-    name: "Legacy Responsive Web Design",
-    issuer: "FreeCodeCamp",
-    date: "Nov’23",
     image: "/unavailable",
     link: "/unavailable",
   },
